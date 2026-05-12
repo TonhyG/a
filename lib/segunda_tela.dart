@@ -9,7 +9,7 @@ class SegundaTela extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Segunda Tela"),
+        title: const Text("Geral"),
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
       body: Container(
