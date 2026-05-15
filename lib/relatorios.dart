@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:a/lists/gastos.dart';
+import 'package:a/lists/lista_gastos.dart';
+import 'package:a/lists/lista_entradas.dart';
+import 'package:a/lists/lista_geral.dart';
 
 class RelatoriosTela extends StatefulWidget {
   const RelatoriosTela({super.key});
@@ -11,55 +13,123 @@ class RelatoriosTela extends StatefulWidget {
 class _RelatoriosTelaState extends State<RelatoriosTela> {
   String filtroSelecionado = "Geral";
 
-  List<Map<String, dynamic>> listaDeGastos = [];
+  List<Map<String, dynamic>> listaGastos = [];
+  List<Map<String, dynamic>> listaEntradas = [];
+
+  List<Map<String, dynamic>> get listaGeral {
+    return [...listaGastos, ...listaEntradas];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    carregarDadosSalvos();
+  }
+
+  void carregarDadosSalvos() {
+    setState(() {
+      listaGastos = [
+        {
+          "titulo": "Mercado",
+          "valor": "50,00",
+          "data": "14/05/2026",
+          "icone": Icons.shopping_cart,
+          "tipo": "gasto",
+        },
+        {
+          "titulo": "Lanche",
+          "valor": "20,00",
+          "data": "15/05/2026",
+          "icone": Icons.fastfood,
+          "tipo": "gasto",
+        },
+      ];
+
+      listaEntradas = [
+        {
+          "titulo": "Salário",
+          "valor": "2500,00",
+          "data": "10/05/2026",
+          "icone": Icons.attach_money,
+          "tipo": "entrada",
+        },
+      ];
+    });
+  }
+
+  void adicionarGasto() {
+    setState(() {
+      listaGastos.add({
+        "titulo": "Novo Gasto",
+        "valor": "10,00",
+        "data": "15/05/2026",
+        "icone": Icons.money_off,
+        "tipo": "gasto",
+      });
+    });
+  }
+
+  void adicionarEntrada() {
+    setState(() {
+      listaEntradas.add({
+        "titulo": "Nova Entrada",
+        "valor": "100,00",
+        "data": "15/05/2026",
+        "icone": Icons.attach_money,
+        "tipo": "entrada",
+      });
+    });
+  }
+
+  Widget buildLista() {
+    Widget content;
+
+    if (filtroSelecionado == "Gastos") {
+      content = ListaGastos(gastos: listaGastos);
+    } else if (filtroSelecionado == "Entradas") {
+      content = ListaEntradas(entradas: listaEntradas);
+    } else {
+      content = ListaGeral(geral: listaGeral);
+    }
+
+    // 🔥 AQUI está o ajuste principal: espaçamento superior
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0),
+      child: content,
+    );
+  }
 
   void abrirFiltro() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Container(
+        return Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                "Filtrar Relatórios",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 15),
-
               ListTile(
-                leading: const Icon(Icons.dashboard),
                 title: const Text("Geral"),
                 onTap: () {
-                  setState(() {
-                    filtroSelecionado = "Geral";
-                  });
+                  setState(() => filtroSelecionado = "Geral");
                   Navigator.pop(context);
                 },
               ),
-
               ListTile(
-                leading: const Icon(Icons.money_off),
                 title: const Text("Gastos"),
                 onTap: () {
-                  setState(() {
-                    filtroSelecionado = "Gastos";
-                  });
+                  setState(() => filtroSelecionado = "Gastos");
                   Navigator.pop(context);
                 },
               ),
-
               ListTile(
-                leading: const Icon(Icons.attach_money),
-                title: const Text("Lucros"),
+                title: const Text("Entradas"),
                 onTap: () {
-                  setState(() {
-                    filtroSelecionado = "Lucros";
-                  });
+                  setState(() => filtroSelecionado = "Entradas");
                   Navigator.pop(context);
                 },
               ),
@@ -70,160 +140,72 @@ class _RelatoriosTelaState extends State<RelatoriosTela> {
     );
   }
 
-  void adicionarGasto() {
-    TextEditingController tituloController = TextEditingController();
-    TextEditingController valorController = TextEditingController();
-
-    showDialog(
+  void abrirAdicionar() {
+    showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
-        return AlertDialog(
-          title: const Text("Adicionar Gasto"),
-          content: Column(
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: tituloController,
-                decoration: const InputDecoration(labelText: "Nome do gasto"),
+              ListTile(
+                leading: const Icon(Icons.remove_circle, color: Colors.red),
+                title: const Text("Adicionar Gasto"),
+                onTap: () {
+                  adicionarGasto();
+                  Navigator.pop(context);
+                },
               ),
-              TextField(
-                controller: valorController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Valor"),
+              ListTile(
+                leading: const Icon(Icons.add_circle, color: Colors.green),
+                title: const Text("Adicionar Entrada"),
+                onTap: () {
+                  adicionarEntrada();
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("Cancelar"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (tituloController.text.isNotEmpty &&
-                    valorController.text.isNotEmpty) {
-                  setState(() {
-                    listaDeGastos.add({
-                      "titulo": tituloController.text,
-                      "valor": valorController.text,
-                      "data":
-                          "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
-                      "icone": Icons.money_off,
-                    });
-                  });
-
-                  Navigator.pop(context);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBCC6AB),
-              ),
-              child: const Text("Adicionar"),
-            ),
-          ],
         );
       },
-    );
-  }
-
-  Widget buildTelaAtual() {
-    if (filtroSelecionado == "Gastos") {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 20),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Relatório: $filtroSelecionado",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                ElevatedButton(
-                  onPressed: adicionarGasto,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFBCC6AB),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.all(10),
-                  ),
-                  child: const Icon(Icons.add, color: Colors.white),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 15),
-
-          Expanded(
-            child: ListaGastos(gastos: listaDeGastos),
-          ),
-        ],
-      );
-    }
-
-    if (filtroSelecionado == "Lucros") {
-      return const Center(
-        child: Text(
-          "Aqui vai aparecer o relatório de Lucros",
-          style: TextStyle(fontSize: 16),
-        ),
-      );
-    }
-
-    return const Center(
-      child: Text(
-        "Aqui vai aparecer o relatório Geral",
-        style: TextStyle(fontSize: 16),
-      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
-        title: const Text("Relatórios"),
-        backgroundColor: const Color(0xFFBCC6AB),
-      ),
-      body: Container(
-        color: const Color.fromARGB(255, 255, 255, 255),
-        child: Stack(
-          children: [
-            buildTelaAtual(),
-
-            // BOTÃO NO CANTO INFERIOR DIREITO (LOGO)
-            Positioned(
-              bottom: 20,
-              right: 20,
-              child: GestureDetector(
-                onTap: abrirFiltro,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    width: 70,
-                    height: 70,
-                    color: Colors.white,
-                    child: Image.asset(
-                      "assets/images/Logo.jpg",
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+        backgroundColor: const Color(0xFFC7D0B8),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
+        title: const Text(
+          "Relatórios",
+          style: TextStyle(color: Colors.black),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list, color: Colors.black),
+            onPressed: abrirFiltro,
+          ),
+        ],
+      ),
+
+      body: buildLista(),
+
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFFC7D0B8),
+        elevation: 4,
+        onPressed: abrirAdicionar,
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
